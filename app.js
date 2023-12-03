@@ -13,9 +13,9 @@ var path = require("path");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const exphbs = require("express-handlebars");
-require("dotenv").config({ path: "./config/.env" });
 
 var restaurant_routes = require('./routes/restaurants');
+const db = require('./config/db');
 
 var app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -40,19 +40,7 @@ const HBS = exphbs.create({
 }
 });
 
-var url = process.env.URL;
-mongoose.connect(url);
-let db = mongoose.connection;
-
-// Check connection
-db.once("open", function () {
-  console.log("Connected to MongoDB");
-});
-
-// Check for DB errors
-db.on("error", function (err) {
-  console.log("DB Error");
-});
+db.initialize();
 
 //ROUTES
 //Initialize handlebar as template engine
@@ -61,7 +49,7 @@ app.set("view engine", "hbs");
 
 // Define a route to render the index page
 app.get("/", (req, res) => {
-  res.render("index", { title: "MongoDB App" }); // layout: false to use the raw HTML without additional layout
+  res.render("index", { title: "Project - Restaurant" }); // layout: false to use the raw HTML without additional layout
 });
 
 app.use("/restaurants", restaurant_routes)
