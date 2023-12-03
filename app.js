@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
   res.render("index", { title: "Project - Restaurant" }); // layout: false to use the raw HTML without additional layout
 });
 
-app.use("/restaurants", restaurant_routes)
+app.use("/api/restaurants", restaurant_routes)
 
 app.get("*", function (req, res) {
   res.render("error", { title: "Error", message: "Wrong Route" });
