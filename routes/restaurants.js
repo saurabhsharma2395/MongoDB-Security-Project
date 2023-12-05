@@ -50,41 +50,41 @@ router.post('/restaurants', async (req, res) => {
     }
 });
 // Render form to update restaurant data
-router.get('/updateRestaurant', async (req, res) => {
+router.get('/find', async (req, res) => {
     res.render('search');
 });
 
-// Find a restaurant by a unique identifier (e.g., ID)
-router.get('/find', async (req, res) => {
-    try {
-        const id = req.query.id;
-        console.log("Received data:", req.body);
-        const restaurant = await restaurants.findOne({ _id: id }).lean();
-        if (!restaurant) {
-            return res.status(404).send('Restaurant not found');
-        }
-        res.render('restaurantDetail', { restaurant });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error searching restaurant');
-    }
-});
 
-// Update a restaurant by ID
-router.post('/update/:id', async (req, res) => {
+router.get('/search', async (req, res) => {
     try {
-        const id = req.params.id;
-        const updatedData = req.body;
-        console.log("Received data:", updatedData);
-        const updatedRestaurant = await restaurants.findByIdAndUpdate(id, updatedData, { new: true });
-        if (!updatedRestaurant) {
-            return res.status(404).send('Restaurant not found');
+        const searchQuery = req.query.var_InputText || '';
+        console.log("Search Query:", searchQuery); // Confirming the search query
+
+        // Check if the search query is empty
+        if (!searchQuery.trim()) {
+            console.log("Empty search query received");
+            return res.status(400).render('searchResults', { 
+                filter_restaurants: [],
+                message: 'Search query is required'
+            });
         }
 
-        res.redirect('/'); // Redirect to a confirmation page or back to the details page
+        // Perform a case-insensitive search in the 'cuisine' field
+        const regex = new RegExp(searchQuery, 'i');
+        console.log("Regex used for search:", regex);
+
+        const filter_restaurants = await restaurants.find({
+            cuisine: regex
+        }).lean();
+
+        console.log("Number of restaurants found:", filter_restaurants.length);
+        
+ 
+
+        res.render('searchResults', { filter_restaurants });
     } catch (err) {
-        console.error("Error in updating restaurant:", err);
-        res.status(500).send('Error updating restaurant');
+        console.error("Error in search: ", err);
+        res.status(500).send('Error in search: ' + err.message);
     }
 });
 

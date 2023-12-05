@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+    <h1>Search Results</h1>
+
+    {{#if filter_restaurants.length}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Cuisine</th>
+                    <th>Address</th>
+                    <th>Zip Code</th>
+                    <th>Borough</th>
+                    <th>Restaurant ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each filter_restaurants}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{cuisine}}</td>
+                        <td>{{address.building}} {{address.street}}</td>
+                        <td>{{address.zipcode}}</td>
+                        <td>{{borough}}</td>
+                        <td>{{restaurant_id}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    {{else}}
+        <p>No restaurants found matching your search criteria.</p>
+    {{/if}}
+</body>
+</html>
