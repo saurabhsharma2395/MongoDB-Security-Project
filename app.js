@@ -1,20 +1,22 @@
 /******************************************************************************
 *
- *  ITE5315 – Project 
- *  I declare that this assignment is my own work in accordance with Humber Academic Policy. 
- *  No part of this assignment has been copied manually or electronically from any other source 
- *  (including web sites) or distributed to other students.
- *
- *	Name: Saurabh Sharma 	Student ID: N01543808	Date: December 03, 2023
- *
- ******************************************************************************/
+*  ITE5315 – Project 
+*  I declare that this assignment is my own work in accordance with Humber Academic Policy. 
+*  No part of this assignment has been copied manually or electronically from any other source 
+*  (including web sites) or distributed to other students.
+*
+*  Name: Saurabh Sharma     Student ID: N01543808   Date: December 03, 2023
+*
+******************************************************************************/
+
 var express = require("express");
 var path = require("path");
-const fs = require("fs");
 const mongoose = require("mongoose");
 const exphbs = require("express-handlebars");
 
-var restaurant_routes = require('./routes/restaurants');
+// Import routes
+var restaurantRoutesCLI = require('./routes/restaurantsCLI');
+var restaurantRoutes = require('./routes/restaurants');
 const db = require('./config/db');
 
 var app = express();
@@ -23,37 +25,40 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 const HBS = exphbs.create({
-  //create customer helper
+  // Create custom helper
   helpers: {
     isArray: function (value) {
-    return Array.isArray(value);
+      return Array.isArray(value);
+    },
+    json: function(context){
+      return JSON.stringify(context);
+    }
   },
-  json: function(context){
-    return JSON.stringify(context);
-  }
-},
   defaultLayout: "main",
   extname: ".hbs",
   runtimeOptions: {
     allowProtoPropertiesByDefault: true,
     allowProtoMethodsByDefault: true
-}
+  }
 });
 
+// Initialize database
 db.initialize();
 
-//ROUTES
-//Initialize handlebar as template engine
+// Initialize handlebars as template engine
 app.engine(".hbs", HBS.engine);
 app.set("view engine", "hbs");
 
+// Use restaurant routes
+app.use("/api/restaurantCLI", restaurantRoutesCLI);
+app.use("/api/restaurant", restaurantRoutes);
+
 // Define a route to render the index page
 app.get("/", (req, res) => {
-  res.render("index", { title: "Project - Restaurant" }); // layout: false to use the raw HTML without additional layout
+  res.render("index", { title: "Project - Restaurant" });
 });
 
-app.use("/api/restaurants", restaurant_routes)
-
+// Handle 404 errors
 app.get("*", function (req, res) {
   res.render("error", { title: "Error", message: "Wrong Route" });
 });

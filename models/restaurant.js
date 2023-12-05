@@ -12,57 +12,45 @@ const mongoose = require('mongoose');
 
 const gradeSchema = new mongoose.Schema({
   date: {
-    type: Date,
-    required: true
+    type: Date
   },
   grade: {
-    type: String,
-    required: true
+    type: String
   },
   score: {
-    type: Number,
-    required: true
-  }
-});
+    type: Number
+  
+  }});
 
 const restaurantSchema = new mongoose.Schema({
   address: {
     building: {
-      type: String,
-      required: true
+      type: String
     },
     coord: {
-      type: [Number],
-      required: true
+      type: [Number]
     },
     street: {
-      type: String,
-      required: true
+      type: String
     },
     zipcode: {
-      type: String,
-      required: true
+      type: String
     },
     borough: {
-      type: String,
-      required: true
+      type: String
     }
   },
   cuisine: {
-    type: String,
-    required: true
+    type: String
   },
   grades: {
-    type: [gradeSchema],
-    required: true
+    type: [gradeSchema]
   },
   name: {
-    type: String,
-    required: true
+    type: String
   },
   restaurant_id: {
-    type: String,
-    required: true
+    type: String
   }
 });
 
