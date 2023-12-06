@@ -9,97 +9,117 @@
  *
  ******************************************************************************/
 
-const express = require('express');
-const router = express.Router();
-const bodyParser = require('body-parser');
-const restaurants = require('../models/restaurant.js'); // Assuming you have a separate module for database operations
-
-// Middleware to handle JSON requests
-router.use(bodyParser.json());
-
-
-// Get all restaurants
-router.get('/', async (req, res) => {
-  try {
-      const restaurants_data = await restaurants.find().lean();
-      res.json(restaurants_data);
-  } catch (err) {
-      res.status(500).send(err.message);
-  }
-});
-
-
-// Get a restaurant by restaurant_id
-router.get('/:restaurant_id', async (req, res) => {
-    try {
-        const restaurantId = req.params.restaurant_id;
-        const restaurant = await restaurants.findOne({ restaurant_id: restaurantId });
-        if (!restaurant) {
-            return res.status(404).send('Restaurant not found');
-        }
-        res.json(restaurant);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send(err.message);
-    }
-});
-
-// Create a new restaurant
-router.post('/', async (req, res) => {
-    try {
-        const restaurantData = req.body;
-        const newRestaurant = new restaurants(restaurantData);
-
-        await newRestaurant.save();
-
-        res.status(201).json(newRestaurant);
-    } catch (err) {
-        console.error("Error adding new restaurant:", err.message);
-        res.status(500).send("An error occurred while adding the new restaurant.");
-    }
-  });
-  
-router.put('/:restaurant_id', async (req, res) => {
-    const restaurantId = req.params.restaurant_id;
-    const updateData = req.body;
-
-    try {
-        // Find the restaurant by its ID and update it
-        const updatedRestaurant = await restaurants.findOneAndUpdate(
-            { restaurant_id: restaurantId }, 
-            updateData, 
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedRestaurant) {
-            return res.status(404).send('Restaurant not found');
-        }
-
-        // Return the updated restaurant
-        res.json(updatedRestaurant);
-    } catch (err) {
-        console.error('Error updating restaurant:', err);
-        res.status(500).send(err.message);
-    }
-});
-
-// DELETE route to delete a restaurant by restaurant_id
-router.delete('/:restaurant_id', async (req, res) => {
-    const restaurantId = req.params.restaurant_id;
-
-    try {
-        // Find the restaurant by its ID and delete it
-        const deletedRestaurant = await restaurants.findOneAndDelete({ restaurant_id: restaurantId });
-
-        if (!deletedRestaurant) {
-            return res.status(404).send('Restaurant not found');
-        }
-
-        res.send('Restaurant deleted successfully');
-    } catch (err) {
-        console.error('Error deleting restaurant:', err);
-        res.status(500).send(err.message);
-    }
-});
-
-module.exports = router;
+ const express = require('express');
+ const { query, validationResult } = require('express-validator');
+ const mongoose = require('mongoose');
+ const router = express.Router();
+ const bodyParser = require('body-parser');
+ const restaurants = require('../models/restaurant.js');
+ 
+ router.use(bodyParser.json());
+ 
+ // GET all restaurants with pagination and optional borough filtering
+ router.get('/', [
+     query('page').isInt({ min: 1 }).optional(),
+     query('perPage').isInt({ min: 1 }).optional(),
+     query('borough').isString().optional()
+ ], async (req, res) => {
+     const errors = validationResult(req);
+     if (!errors.isEmpty()) {
+         return res.status(400).json({ errors: errors.array() });
+     }
+ 
+     const page = parseInt(req.query.page) || 1;
+     const perPage = parseInt(req.query.perPage) || 5;
+     const borough = req.query.borough;
+ 
+     let query = {};
+     if (borough) {
+         query.borough = borough;
+     }
+ 
+     try {
+         const restaurants_data = await restaurants.find(query)
+             .skip((page - 1) * perPage)
+             .limit(perPage)
+             .lean();
+         res.json(restaurants_data);
+     } catch (err) {
+         res.status(500).send(err.message);
+     }
+ });
+ 
+ // GET a restaurant by _id
+ router.get('/:id', async (req, res) => {
+     try {
+         const restaurantId = req.params.id;
+         if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+             return res.status(400).send('Invalid ID format');
+         }
+ 
+         const restaurant = await restaurants.findById(restaurantId);
+         if (!restaurant) {
+             return res.status(404).send('Restaurant not found');
+         }
+         res.json(restaurant);
+     } catch (err) {
+         res.status(500).send(err.message);
+     }
+ });
+ 
+ // POST a new restaurant
+ router.post('/', async (req, res) => {
+     try {
+         const newRestaurant = new restaurants(req.body);
+         await newRestaurant.save();
+         res.status(201).json(newRestaurant);
+     } catch (err) {
+         res.status(500).send("Error adding new restaurant: " + err.message);
+     }
+ });
+ 
+ // PUT update a restaurant by _id
+ router.put('/:id', async (req, res) => {
+     try {
+         const restaurantId = req.params.id;
+         if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+             return res.status(400).send('Invalid ID format');
+         }
+ 
+         const updatedRestaurant = await restaurants.findByIdAndUpdate(
+             restaurantId,
+             req.body,
+             { new: true, runValidators: true }
+         );
+ 
+         if (!updatedRestaurant) {
+             return res.status(404).send('Restaurant not found');
+         }
+ 
+         res.json(updatedRestaurant);
+     } catch (err) {
+         res.status(500).send("Error updating restaurant: " + err.message);
+     }
+ });
+ 
+ // DELETE a restaurant by _id
+ router.delete('/:id', async (req, res) => {
+     try {
+         const restaurantId = req.params.id;
+         if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+             return res.status(400).send('Invalid ID format');
+         }
+ 
+         const deletedRestaurant = await restaurants.findByIdAndDelete(restaurantId);
+         if (!deletedRestaurant) {
+             return res.status(404).send('Restaurant not found');
+         }
+ 
+         res.send('Restaurant deleted successfully');
+     } catch (err) {
+         res.status(500).send("Error deleting restaurant: " + err.message);
+     }
+ });
+ 
+ module.exports = router;
+ 
