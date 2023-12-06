@@ -82,14 +82,15 @@
  router.put('/:id', async (req, res) => {
      try {
          const restaurantId = req.params.id;
+         const updateData = req.body;
          if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
              return res.status(400).send('Invalid ID format');
          }
  
          const updatedRestaurant = await restaurants.findByIdAndUpdate(
              restaurantId,
-             req.body,
-             { new: true, runValidators: true }
+             updateData,
+            { new: true, overwrite: true, runValidators: true }
          );
  
          if (!updatedRestaurant) {
