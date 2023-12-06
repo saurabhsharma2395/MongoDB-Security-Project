@@ -47,26 +47,18 @@ router.get('/:restaurant_id', async (req, res) => {
 // Create a new restaurant
 router.post('/', async (req, res) => {
     try {
-        // Assuming req.body contains all necessary restaurant data
         const restaurantData = req.body;
-  
-        // Create a new restaurant instance
         const newRestaurant = new restaurants(restaurantData);
-  
-        // Save the restaurant to the database
+
         await newRestaurant.save();
-  
-        // Send the created restaurant as a response
+
         res.status(201).json(newRestaurant);
     } catch (err) {
-        // Log the error for debugging
         console.error("Error adding new restaurant:", err.message);
-  
-        // Send a generic error message to the client
         res.status(500).send("An error occurred while adding the new restaurant.");
     }
   });
-// Update a restaurant
+  
 router.put('/:restaurant_id', async (req, res) => {
     const restaurantId = req.params.restaurant_id;
     const updateData = req.body;
@@ -79,7 +71,6 @@ router.put('/:restaurant_id', async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        // Check if the restaurant was found and updated
         if (!updatedRestaurant) {
             return res.status(404).send('Restaurant not found');
         }
@@ -100,12 +91,10 @@ router.delete('/:restaurant_id', async (req, res) => {
         // Find the restaurant by its ID and delete it
         const deletedRestaurant = await restaurants.findOneAndDelete({ restaurant_id: restaurantId });
 
-        // Check if the restaurant was found and deleted
         if (!deletedRestaurant) {
             return res.status(404).send('Restaurant not found');
         }
 
-        // Confirm deletion
         res.send('Restaurant deleted successfully');
     } catch (err) {
         console.error('Error deleting restaurant:', err);
