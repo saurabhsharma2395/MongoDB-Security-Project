@@ -3,14 +3,57 @@
 
 <form method="POST" action="/api/restaurant/insert">
 
-    <div id="form-group">
-        <label>Name:</label>
-        <input class="form-control" name="name" type="text" required>
+    <div class="form-group">
+        <label>Restaurant ID:</label>
+        <input class="form-control" name="restaurant_id" type="text" value="{{formData.restaurant_id}}">
+        {{#if errors.restaurant_id}}
+            <p class="error">Error: {{errors.restaurant_id}}</p>
+        {{/if}}
     </div>
 
-     <div id="form-group">
+    <div class="form-group">
+        <label>Name:</label>
+        <input class="form-control" name="name" type="text" value="{{formData.name}}">
+        {{#if errors.name}}
+            <p class="error">Error: {{errors.name}}</p>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label>Building:</label>
+        <input class="form-control" name="address[building]" type="text" value="{{formData.address.building}}">
+        {{#if errors.building}}
+            <p class="error">Error: {{errors.building}}</p>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label>Street:</label>
+        <input class="form-control" name="address[street]" type="text" value="{{formData.address.street}}">
+        {{#if errors.street}}
+            <p class="error">Error: {{errors.street}}</p>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label>Zipcode:</label>
+        <input class="form-control" name="address[zipcode]" type="text" value="{{formData.address.zipcode}}">
+        {{#if errors.zipcode}}
+            <p class="error">Error: {{errors.zipcode}}</p>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label>Borough:</label>
+        <input class="form-control" name="address[borough]" type="text" value="{{formData.address.borough}}">
+        {{#if errors.borough}}
+            <p class="error">Error: {{errors.borough}}</p>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
         <label>Cuisine:</label>
-        <select class="form-control" name="cuisine" required>
+        <select class="form-control" name="cuisine">
             <option value="">Select Cuisine</option>
             <option value="Italian">Italian</option>
             <option value="Chinese">Chinese</option>
@@ -18,50 +61,34 @@
             <option value="Indian">Indian</option>
             <option value="French">French</option>
             <option value="Mexican">Mexican</option>
-           <option value="American">American</option>
-           <option value="Other">Other</option>
+            <option value="American">American</option>
+            <option value="Other">Other</option>
         </select>
+        {{#if errors.cuisine}}
+            <p class="error">Error: {{errors.cuisine}}</p>
+        {{/if}}
     </div>
 
-    <div id="form-group">
-        <label>Building:</label>
-        <input class="form-control" name="address[building]" type="text" required>
-    </div>
-
-    <div id="form-group">
-        <label>Street:</label>
-        <input class="form-control" name="address[street]" type="text" required>
-    </div>
-
-    <div id="form-group">
-        <label>Zipcode:</label>
-        <input class="form-control" name="address[zipcode]" type="text" required>
-    </div>
-
-    <div id="form-group">
-        <label>Borough:</label>
-        <input class="form-control" name="address[borough]" type="text">
-    </div>
-
-    <div id="form-group">
-        <label>Restaurant ID:</label>
-        <input class="form-control" name="restaurant_id" type="text" required>
-    </div>
-
-     <div id="form-group">
-        <label>Coordinates:</label>
-        <input class="form-control" name="address[coord][0]" type="number" step="any" placeholder="Latitude" required>
-        <input class="form-control" name="address[coord][1]" type="number" step="any" placeholder="Longitude" required>
+    <div class="row-group">
+        <div class="inline-group">
+            <label>Latitude:</label>
+            <input class="form-control inline-control" name="address[coord][0]" type="number" step="any" placeholder="Latitude">
+        </div>
+        <div class="inline-group">
+            <label>Longitude:</label>
+            <input class="form-control inline-control" name="address[coord][1]" type="number" step="any" placeholder="Longitude">
+        </div>
     </div>
 
     <!-- Dynamic Grades Section -->
     <div id="grades-section">
         <label>Grades:</label>
         <div id="grade-fields"></div>
-        <button type="button" id="add-grade">Add Grade</button>
+        <button class="btn btn-primary" type="button" id="add-grade">Add Grade</button>
     </div>
 
     <input class="btn btn-primary" type="submit" value="Submit" />
+</div>
 </form>
 <script>
     document.getElementById('add-grade').addEventListener('click', function(event) {
@@ -70,19 +97,21 @@
         const gradeGroup = document.createElement('div');
         gradeGroup.classList.add('grade-group');
         gradeGroup.innerHTML = `
-            <div id="form-group">
+        <div class="row-group">
+            <div class="inline-group">
                 <label>Grade Date:</label>
-                <input class="form-control" name="grades[${gradeIndex}][date]" type="date">
+                <input class="form-control inline-control" name="grades[${gradeIndex}][date]" type="date">
             </div>
-            <div id="form-group">
+            <div class="inline-group">
                 <label>Grade:</label>
-                <input class="form-control" name="grades[${gradeIndex}][grade]" type="text">
+                <input class="form-control inline-control" name="grades[${gradeIndex}][grade]" type="text">
             </div>
-            <div id="form-group">
+            <div class="inline-group">
                 <label>Score:</label>
-                <input class="form-control" name="grades[${gradeIndex}][score]" type="number">
+                <input class="form-control inline-control" name="grades[${gradeIndex}][score]" type="number">
             </div>
-        `;
+        </div>
+    `;
         document.getElementById('grade-fields').appendChild(gradeGroup);
     });
 </script>

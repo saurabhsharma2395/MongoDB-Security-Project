@@ -14,15 +14,24 @@
     position: relative;
 }
 
-#form-group p {
+.error {
     color: red;
     font-size: small;
     font-family: 'Ubuntu', sans-serif;
 }
 
+h1{
+    margin: 0 auto;
+}
+
+.form-container {
+    width: 80%;
+    margin: 0 auto; /* This centers the container */
+}
+
 /* Form Control Styles */
 .form-control {
-    width: 76%;
+    width: 50%;
     color: rgb(38, 50, 56);
     font-weight: 700;
     font-size: 14px;
@@ -37,11 +46,33 @@
     text-align: center;
     font-family: 'Ubuntu', sans-serif;
     transition: all 0.3s ease;
+    display: block;
+    margin: 0 auto;
 }
 
 .form-control:focus {
     border: 2px solid rgba(0, 0, 0, 0.18);
     box-shadow: 0 0 8px rgba(156, 39, 176, 0.4);
+}
+
+/* Row Group Style */
+.row-group {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.inline-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.inline-control {
+    margin-left: 10px;
+    width: auto; /* Adjust width as needed */
 }
 
 /* Form Wrapper */
@@ -104,5 +135,17 @@ a:hover {
         margin-left: 5%;
         margin-right: 5%;
         width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .inline-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .inline-control {
+        margin-left: 0;
+        width: 90%; /* Adjust width for smaller screens */
     }
 }

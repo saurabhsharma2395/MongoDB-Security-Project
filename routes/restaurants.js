@@ -13,7 +13,8 @@
  const router = express.Router();
  const mongoose = require("mongoose");
  const bodyParser = require('body-parser');
- const restaurants = require('../models/restaurant.js'); // Assuming you have a separate module for database operations
+ const restaurants = require('../models/restaurant.js');
+ const { check, validationResult } = require("express-validator");
  
  // Middleware to handle JSON requests
  router.use(bodyParser.json());
@@ -73,11 +74,33 @@ router.get('/', loadRestaurantsData, (req, res) => {
     }
 });
 
-// router.get('/addRestaurant', async (req, res) => {
-//     res.render('insert_restaurant');
-// });
+router.get('/insert', async (req, res) => {
+    res.render('insert_restaurant');
+});
 
-router.post('/insert', async (req, res) => {
+const restaurantValidationRules = [
+    check("restaurant_id").not().isEmpty().withMessage("Restaurant ID is required."),
+    check("name").not().isEmpty().withMessage("Name is required."),
+    check("building").not().isEmpty().withMessage("Building is required."),
+    check("street").not().isEmpty().withMessage("Street is required."),
+    check("zipcode").not().isEmpty().withMessage("Zipcode is required."),
+    check("cuisine").not().isEmpty().withMessage("Cuisine is required."),
+    check("borough").not().isEmpty().withMessage("Borough is required."),
+  ];
+
+router.post('/insert', restaurantValidationRules, async (req, res) => {
+    const errors_list = validationResult(req);
+  if (!errors_list.isEmpty()) {
+    const formattedErrors = {};
+    errors_list.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+    });
+
+    return res.status(400).render('insert_restaurant', {
+      errors: formattedErrors,
+      formData: req.body
+    });
+  }
     try {
         console.log("Received data:", req.body);
 
