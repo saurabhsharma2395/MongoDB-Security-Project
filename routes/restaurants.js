@@ -20,40 +20,112 @@
  
  
  // Get all restaurants
-router.get('/', async (req, res) => {
+ const loadRestaurantsData = async (req, res, next) => {
+    const perPage = 12;
+    const page = parseInt(req.query.page) || 1; // Get the requested page number or default to 1
+
     try {
-        const restaurants_data = await restaurants.find().lean();
-        res.render('display', { restaurants_data });
+        const totalRestaurants = await restaurants.countDocuments();
+        const totalPages = Math.ceil(totalRestaurants / perPage);
+
+        if (page < 1 || page > totalPages) {
+            return res.status(404).render('error', {
+                title: "Error",
+                message: "Page not found."
+            });
+        }
+
+        const restaurants_data = await restaurants.find()
+            .skip((page - 1) * perPage)
+            .limit(perPage)
+            .lean();
+
+        req.restaurantsData = restaurants_data;
+        req.currentPage = page;
+        req.totalPages = totalPages;
+
+        next();
     } catch (err) {
-        console.error('Error fetching restaurants:', err);
-        res.status(500).send('Error fetching restaurants: ' + err.message);
+        console.error("Error loading restaurant data.", err);
+        res.status(500).render('error', {
+            title: "Error",
+            message: "Error loading restaurant data."
+        });
+    }
+};
+
+// Routes
+router.get('/', loadRestaurantsData, (req, res) => {
+    if (req.xhr) {
+        // AJAX request: send JSON
+        res.json({
+            restaurants_data: req.restaurantsData,
+            currentPage: req.currentPage,
+            totalPages: req.totalPages
+        });
+    } else {
+        // Normal request: render view
+        res.render('display', {
+            restaurants_data: req.restaurantsData,
+            currentPage: req.currentPage,
+            totalPages: req.totalPages
+        });
     }
 });
 
-router.get('/addRestaurant', async (req, res) => {
-    res.render('insert_restaurant');
-});
+// router.get('/addRestaurant', async (req, res) => {
+//     res.render('insert_restaurant');
+// });
 
-router.post('/restaurants', async (req, res) => {
+router.post('/insert', async (req, res) => {
     try {
-        console.log("Received data:", req.body); // Add this line to log received data
+        console.log("Received data:", req.body);
+
+        // Convert string coordinates to numbers
+        if (req.body.address && req.body.address.coord) {
+            req.body.address.coord = [
+                parseFloat(req.body.address.coord[0]),
+                parseFloat(req.body.address.coord[1])
+            ];
+        }
+
+        // Convert grades data
+        if (req.body.grades) {
+            req.body.grades = req.body.grades.map(grade => ({
+                date: grade.date ? new Date(grade.date) : null,
+                grade: grade.grade,
+                score: grade.score ? parseInt(grade.score) : null
+            }));
+        }
+
         const newRestaurant = new restaurants({
             _id: new mongoose.Types.ObjectId(),
             ...req.body
         });
+
         await newRestaurant.save();
         console.log("ADDED SUCCESSFULLY");
-        res.redirect('/');
+
+        // Redirect to the searchResults page with the new restaurant
+        return res.render('searchResults', {
+            filter_restaurants: [newRestaurant.toObject()]
+        });
+
     } catch (err) {
         console.error("Error saving new restaurant: ", err);
-        res.status(500).send('Failed to add new restaurant');
+
+        // Render error page
+        return res.status(500).render('error', {
+            title: "Error",
+            message: "Failed to add new restaurant. Error: " + err.message
+        });
     }
 });
+
 // Render form to update restaurant data
 router.get('/find', async (req, res) => {
     res.render('search');
 });
-
 
 router.get('/search', async (req, res) => {
     try {

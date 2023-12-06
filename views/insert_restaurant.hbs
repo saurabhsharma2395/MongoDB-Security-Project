@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="/stylesheets/formStyle.css" />
 <h1>Add Restaurant</h1>
 
-<form method="POST" action="/api/restaurant/restaurants">
+<form method="POST" action="/api/restaurant/insert">
 
     <div id="form-group">
         <label>Name:</label>
@@ -48,7 +48,41 @@
         <input class="form-control" name="restaurant_id" type="text" required>
     </div>
 
-    <!-- Coordinates and Grades are not included as they might require a different approach or more complex input -->
+     <div id="form-group">
+        <label>Coordinates:</label>
+        <input class="form-control" name="address[coord][0]" type="number" step="any" placeholder="Latitude" required>
+        <input class="form-control" name="address[coord][1]" type="number" step="any" placeholder="Longitude" required>
+    </div>
+
+    <!-- Dynamic Grades Section -->
+    <div id="grades-section">
+        <label>Grades:</label>
+        <div id="grade-fields"></div>
+        <button type="button" id="add-grade">Add Grade</button>
+    </div>
 
     <input class="btn btn-primary" type="submit" value="Submit" />
 </form>
+<script>
+    document.getElementById('add-grade').addEventListener('click', function(event) {
+        event.preventDefault();
+        const gradeIndex = document.querySelectorAll('.grade-group').length;
+        const gradeGroup = document.createElement('div');
+        gradeGroup.classList.add('grade-group');
+        gradeGroup.innerHTML = `
+            <div id="form-group">
+                <label>Grade Date:</label>
+                <input class="form-control" name="grades[${gradeIndex}][date]" type="date">
+            </div>
+            <div id="form-group">
+                <label>Grade:</label>
+                <input class="form-control" name="grades[${gradeIndex}][grade]" type="text">
+            </div>
+            <div id="form-group">
+                <label>Score:</label>
+                <input class="form-control" name="grades[${gradeIndex}][score]" type="number">
+            </div>
+        `;
+        document.getElementById('grade-fields').appendChild(gradeGroup);
+    });
+</script>

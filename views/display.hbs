@@ -43,50 +43,49 @@
 
     <!-- AJAX Request for Infinite Scrolling -->
    <script>
-    var page = 2; // Start from the second page
-    var isFetching = false; // Flag to indicate if AJAX request is in progress
+        var page = 1; // Start from the first page
+        var isFetching = false;
+        var totalPages = {{totalPages}}; // Total number of pages from server
 
-    $(window).scroll(function() {
-        if (isFetching) return; // Prevent multiple simultaneous requests
+        $(window).scroll(function() {
+            if (isFetching || page >= totalPages) return;
 
-        var distanceFromBottom = $(document).height() - $(window).height() - $(window).scrollTop();
-        var threshold = 10; // Adjust threshold as needed
+            var distanceFromBottom = $(document).height() - $(window).height() - $(window).scrollTop();
+            var threshold = 12; // Adjust threshold as needed
 
-        if (distanceFromBottom < threshold) {
-            console.log('Scrolled near the bottom');
-            isFetching = true; // Set the flag
-            fetchRestaurants();
-        }
-    });
-
-    function fetchRestaurants() {
-        $.ajax({
-            url: '/api/restaurant?page=' + page,
-            type: 'get',
-            dataType: 'json',
-            success: function(data) {
-                if (data.restaurants_data && data.restaurants_data.length > 0) {
-                    data.restaurants_data.forEach(function(restaurant) {
-                        var card = '<div class="restaurant-card">' +
-                            '<h4>' + restaurant.name + '</h4>' +
-                            '<p>' + restaurant.cuisine + '</p>' +
-                            '<p>' + restaurant.address.building + ' ' + restaurant.address.street + ', ' + restaurant.address.zipcode + '</p>' +
-                            '</div>';
-                        $('#restaurantGrid').append(card);
-                    });
-                    page++; // Increment the page number
-                } else {
-                    $('#end-marker').show(); // Show the marker if there's no more data
-                }
-                isFetching = false; // Reset the flag
-            },
-            error: function(error) {
-                console.log('Error:', error);
-                isFetching = false; // Reset the flag in case of error
-                $('#end-marker').show(); // Show the marker in case of error
+            if (distanceFromBottom < threshold) {
+                isFetching = true;
+                fetchRestaurants();
             }
         });
-    }
-</script>
+
+        function fetchRestaurants() {
+    page++;
+    $.ajax({
+        url: '/api/restaurant?page=' + page,
+        type: 'get',
+        dataType: 'json',
+        success: function(data) {
+            if (data.restaurants_data && data.restaurants_data.length > 0) {
+                data.restaurants_data.forEach(function(restaurant) {
+                    var card = '<div class="restaurant-card">' +
+                        '<h4>' + restaurant.name + '</h4>' +
+                        '<p>' + restaurant.cuisine + '</p>' +
+                        '<p>' + restaurant.address.building + ' ' + restaurant.address.street + ', ' + restaurant.address.zipcode + '</p>' +
+                        '</div>';
+                    $('#restaurantGrid').append(card);
+                });
+            } else {
+                $('#end-marker').show();
+            }
+            isFetching = false;
+        },
+        error: function(error) {
+            console.log('Error:', error);
+            isFetching = false;
+        }
+    });
+}
+    </script>
 </body>
 </html>

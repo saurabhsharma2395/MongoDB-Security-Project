@@ -164,14 +164,15 @@ nav .dropdown-content a:hover {
   padding: 0;
   margin: 0;
 }
+
 /* Basic Grid Layout */
 #restaurantGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 columns */
-  grid-gap: 20px; /* Space between cards */
-  padding: 20px; /* Padding around the grid */
-  margin: 0 auto; /* Centering the grid */
-  max-width: 1200px; /* Adjust based on your layout */
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 20px;
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 /* Card Styling */
@@ -181,23 +182,22 @@ nav .dropdown-content a:hover {
   border-radius: 5px;
   background-color: #fff;
   padding: 16px;
-  overflow: hidden; /* Ensures no content spills out */
+  overflow: hidden;
 }
 
 .restaurant-card:hover {
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.4);
-  transform: translateY(-5px); /* Slight lift effect on hover */
+  transform: translateY(-5px);
 }
 
-/* Card Title (Restaurant Name) */
 .restaurant-card h4 {
   margin-top: 0;
   color: #333;
-  font-size: 1.2em; /* Slightly larger */
-  font-weight: bold; /* Make it bold */
-  background-color: #f8f8f8; /* Subtle background */
-  padding: 8px; /* Padding for the background */
-  border-radius: 3px; /* Rounded corners */
+  font-size: 1.2em;
+  font-weight: bold;
+  background-color: #f8f8f8;
+  padding: 8px;
+  border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for emphasis */
   display: inline-block; /* To fit the size of the text */
 }
