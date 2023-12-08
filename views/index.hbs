@@ -8,5 +8,25 @@
  *	Name: Saurabh Sharma & Taranjeet Singh 	Student ID: N01543808	Date: December 05, 2023
  *
 ******************************************************************************-->
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/stylesheets/formStyle.css" />
+    <script>
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+    </script>
+</head>
+<body>
+    <h1>{{title}}</h1>
+    <p>Welcome to {{title}}</p>
+
+    <!-- Buttons for Login and Register -->
+    <button onclick="navigateTo('/login')" class="btn-primary">Login</button>
+    <button onclick="navigateTo('/register')" class="btn-primary">Register</button>
+</body>
+</html>

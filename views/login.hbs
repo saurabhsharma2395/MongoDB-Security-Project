@@ -1,0 +1,33 @@
+<!--******************************************************************************
+ *
+ *  ITE5315 – Project 
+ *  I declare that this assignment is my own work in accordance with Humber Academic Policy. 
+ *  No part of this assignment has been copied manually or electronically from any other source 
+ *  (including web sites) or distributed to other students.
+ *
+ *  Name: Saurabh Sharma & Taranjeet Singh   Student ID: N01543808 Date: December 05, 2023
+ *
+******************************************************************************-->
+<link rel="stylesheet" href="/stylesheets/formStyle.css" />
+<h1>Login</h1>
+
+<form method="POST" action="/login">
+
+    <div class="form-group">
+        <label>Email:</label>
+        <input class="form-control" name="email" type="email">
+        {{#if errors.email}}
+            <p class="error">Error: {{errors.email}}</p>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label>Password:</label>
+        <input class="form-control" name="password" type="password">
+        {{#if errors.password}}
+            <p class="error">Error: {{errors.password}}</p>
+        {{/if}}
+    </div>
+
+    <input class="btn btn-primary" type="submit" value="Login" />
+</form>

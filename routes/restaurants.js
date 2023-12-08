@@ -15,7 +15,7 @@
  const bodyParser = require('body-parser');
  const restaurants = require('../models/restaurant.js');
  const { check, validationResult } = require("express-validator");
- 
+ const { requireAuth, checkRole } = require('../middleware/auth');
  // Middleware to handle JSON requests
  router.use(bodyParser.json());
  
