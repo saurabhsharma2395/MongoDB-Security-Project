@@ -131,24 +131,30 @@ app.post('/login', async (req, res) => {
       return res.status(400).send("Email and password are required");
     }
 
-    const oldUser = await UserModel.findOne({ email });
-    if (oldUser) {
-      return res.status(409).send("User Already Exist. Please Login");
+    // Find the user by email
+    const user = await UserModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(401).send("User not found");
     }
 
+    // Compare the provided password with the user's stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).send("Invalid password");
     }
 
-    const token = jwt.sign({ email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
-    //res.status(200).json({ token, message: "Login successful" });
-     res.redirect('/api/restaurant');
+    // Create a token
+    const token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
+
+    // Send the token in the response
+    console.log({ token, message: "Login successful", redirect: '/api/restaurant' });
+    res.redirect('/api/restaurant');
   } catch (error) {
     console.error(error); 
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 // Define a route to render the index page
