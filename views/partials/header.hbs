@@ -27,11 +27,8 @@
         <a href="/api/restaurant/find">Borough</a>
       </div>
     </li>
-    {{#if isLoggedIn}}
-      <li id="logoutLi"><a href="#" id="logoutLink">Logout</a></li>
-    {{else}}
-      <li><a href="/login">Login</a></li>
-    {{/if}}
+    <li id="logoutLi" style="display: none;"><a href="/logout">Logout</a></li>
+
   </ul>
 </nav>
     <canvas id="canvas_head"></canvas>

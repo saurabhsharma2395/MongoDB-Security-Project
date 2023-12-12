@@ -1,12 +1,19 @@
-// loginHandler.js
-
-// loginHandler.js or similar file
-document.getElementById('logoutLink').addEventListener('click', function(event) {
-    event.preventDefault();
-    
-    // Clear JWT from localStorage or cookies
-    localStorage.removeItem('token'); // If using localStorage
+// Assuming jQuery is used
+$(document).ready(function() {
+  const token = getCookie('token');
   
-    // Redirect to login page
-    window.location.href = '/login';
-  });
+  if (token) {
+      // If token is present, show the logout link
+      $("#logoutLi").show();
+  } else {
+      // If not logged in, hide the logout link
+      $("#logoutLi").hide();
+  }
+  
+  // Function to get the value of a cookie by name
+  function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+});

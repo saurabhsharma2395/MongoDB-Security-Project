@@ -125,33 +125,25 @@ app.get("/login", (req, res) => {
 });
 app.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+      const { email, password } = req.body;
+      const user = await UserModel.findOne({ email: email.toLowerCase() });
 
-    if (!email || !password) {
-      return res.status(400).send("Email and password are required");
-    }
+      if (user && await bcrypt.compare(password, user.password)) {
+          const token = jwt.sign(
+              { user_id: user._id, email },
+              process.env.TOKEN_KEY,
+              { expiresIn: "2h" }
+          );
 
-    // Find the user by email
-    const user = await UserModel.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).send("User not found");
-    }
-
-    // Compare the provided password with the user's stored hashed password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).send("Invalid password");
-    }
-
-    // Create a token
-    const token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
-
-    // Send the token in the response
-    console.log({ token, message: "Login successful", redirect: '/api/restaurant' });
-    res.redirect('/api/restaurant');
-  } catch (error) {
-    console.error(error); 
-    res.status(500).send("Internal Server Error");
+          // Set token in cookie with HTTP Only flag
+          res.cookie('token', token, { httpOnly: true });
+          res.redirect('/api/restaurant'); // or to the page you want to redirect after login
+      } else {
+          res.status(401).send("Invalid Credentials");
+      }
+  } catch (err) {
+      console.error(err);
+      res.status(500).send("Internal Server Error");
   }
 });
 
@@ -162,12 +154,10 @@ app.get("/", (req, res) => {
   // Check if user is logged in
   res.render("index", { title: "Project - Restaurant", isLoggedIn: isLoggedIn });
 });
+// Logout route
 app.get('/logout', (req, res) => {
-  // If using JWT stored in cookies
-  res.cookie('token', '', { maxAge: 1 }); // Clear the token cookie
-
-  // Redirect to the home page or login page
-  res.redirect('/login');
+  res.clearCookie('token'); // Clear the JWT token cookie
+  res.redirect('/login'); // Redirect to the login page
 });
 // Handle 404 errors
 app.get("*", function (req, res) {
