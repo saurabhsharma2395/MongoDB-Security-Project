@@ -14,37 +14,75 @@
     <meta charset="UTF-8">
     <title>Search Results</title>
     <link rel="stylesheet" href="/stylesheets/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
     <h1>Search Results</h1>
 
-    {{#if filter_restaurants.length}}
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Cuisine</th>
-                    <th>Address</th>
-                    <th>Zip Code</th>
-                    <th>Borough</th>
-                    <th>Restaurant ID</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each filter_restaurants}}
-                    <tr>
-                        <td>{{name}}</td>
-                        <td>{{cuisine}}</td>
-                        <td>{{address.building}} {{address.street}}</td>
-                        <td>{{address.zipcode}}</td>
-                        <td>{{borough}}</td>
-                        <td>{{restaurant_id}}</td>
-                    </tr>
-                {{/each}}
-            </tbody>
-        </table>
-    {{else}}
-        <p>No restaurants found matching your search criteria.</p>
-    {{/if}}
+    <div id="restaurantGrid">
+        {{#each filter_restaurants}}
+            <div class="restaurant-card">
+                <h4>{{name}}</h4>
+                <p>{{cuisine}}</p>
+                <p>{{address.building}} {{address.street}}, {{address.zipcode}}</p>
+                <p>Borough: {{borough}}</p>
+                <p>Restaurant ID: {{restaurant_id}}</p>
+            </div>
+        {{/each}}
+    </div>
+    <div id="loadMore" style="display: none;"></div>
+    <script>
+        var page = {{currentPage}};
+        var totalPages = {{totalPages}};
+        var isFetching = false;
+        var searchType = "{{searchType}}";
+        var searchQuery = "{{searchQuery}}";
+
+        function fetchSearchResults() {
+            if (isFetching || page >= totalPages) return;
+            isFetching = true;
+            page++;
+            var ajaxUrl = '/api/restaurant/search?parameter=' + encodeURIComponent(searchType) + '&var_InputText=' + encodeURIComponent(searchQuery) + '&page=' + page;
+
+            $.ajax({
+                url: ajaxUrl,
+                type: 'get',
+                dataType: 'json',
+                success: function(data) {
+                    if (data.filter_restaurants && data.filter_restaurants.length > 0) {
+                        data.filter_restaurants.forEach(function(restaurant) {
+                            var card = '<div class="restaurant-card">' +
+                                '<h4>' + restaurant.name + '</h4>' +
+                                '<p>' + restaurant.cuisine + '</p>' +
+                                '<p>' + restaurant.address.building + ' ' + restaurant.address.street + ', ' + restaurant.address.zipcode + '</p>' +
+                                '<p> Borough: ' + restaurant.borough + '</p>' +
+                                '<p> Restaurant ID: ' + restaurant.restaurant_id + '</p>' +
+                                '</div>';
+                            $('#restaurantGrid').append(card);
+                        });
+                    } else {
+                        $('#loadMore').hide(); // Hide the loading message
+                    }
+                    isFetching = false;
+                },
+                error: function(error) {
+                    console.log('Error:', error);
+                    isFetching = false;
+                }
+            });
+        }
+
+        $(window).scroll(function() {
+            var distanceFromBottom = $(document).height() - $(window).height() - $(window).scrollTop();
+            var threshold = 100; // Adjust threshold as needed
+
+            if (distanceFromBottom < threshold && !isFetching) {
+                fetchSearchResults();
+            }
+        });
+
+        // Call once at the start to ensure there's enough content to scroll
+        fetchSearchResults();
+    </script>
 </body>
 </html>

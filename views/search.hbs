@@ -23,6 +23,8 @@
         <div class="container">
         <h1>Search</h1>
         <form action="/api/restaurant/search" method="get">
+          <!-- Hidden input to send the search type (parameter) -->
+          <input type="hidden" name="parameter" value="{{parameter}}">
           <input type="text" id="var_InputText" name="var_InputText" required placeholder="Search by {{parameter}}" autofocus >
           <button type="submit">SUBMIT</button>
         </form>
