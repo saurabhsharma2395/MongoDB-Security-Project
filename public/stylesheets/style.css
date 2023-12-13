@@ -288,3 +288,11 @@ tr:hover:not(.blank-row) {
   background-color: palevioletred;
 }
 
+.restaurant-link {
+  text-decoration: none;
+  color: inherit; 
+}
+
+.restaurant-card {
+  cursor: pointer;
+}

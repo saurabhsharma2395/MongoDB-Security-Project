@@ -253,4 +253,29 @@ router.get("/search", loadSearchData, (req, res) => {
   }
 });
 
+router.get('/individual/:restaurant_id', async (req, res) => {
+  try {
+      const restaurantId = req.params.restaurant_id;
+      const filter_restaurants = await restaurants.find({restaurant_id: restaurantId}).lean();
+      if (!filter_restaurants) {
+          return res.status(404).render('error', {
+              title: "Error",
+              message: "Restaurant not found."
+          });
+      }
+
+      res.render('restaurantDetail', {
+          title: 'Restaurant Details',
+          restaurant_dat: filter_restaurants[0]
+      });
+  } catch (err) {
+      console.error("Error fetching restaurant details: ", err);
+      res.status(500).render('error', {
+          title: "Error",
+          message: "Error fetching restaurant details."
+      });
+  }
+});
+
+
 module.exports = router;

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+    <h1>{{restaurant_dat.name}}</h1>
+    <p>{{restaurant_dat.cuisine}}</p>
+    <p>{{restaurant_dat.address.building}} {{restaurant_dat.address.street}}, {{restaurant_dat.address.zipcode}}</p>
+    <p>Borough: {{restaurant_dat.borough}}</p>
+
+    <!-- Add edit, delete, and book table buttons -->
+    <a href="/edit-restaurant/{{restaurant_dat._id}}">Edit</a>
+    <a href="/delete-restaurant/{{restaurant_dat._id}}">Delete</a>
+    <a href="/book-table/{{restaurant_dat._id}}">Book a Table</a>
+</body>
+</html>

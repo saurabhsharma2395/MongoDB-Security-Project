@@ -88,8 +88,13 @@ app.get("/", (req, res) => {
   res.render("index", { title: "Project - Restaurant" });
 });
 
+// Define the index route
+app.get("/welcome", isLoggedIn, (req, res) => {
+  res.render("index", { title: "Project - Restaurant" });
+});
+
 // Handle 404 errors
-app.use("*", (req, res) => {
+app.use("*", isLoggedIn, (req, res) => {
   res.render("error", { title: "Error", message: "Page Not Found" });
 });
 

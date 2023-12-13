@@ -74,7 +74,7 @@ router.post("/register", registerValidationRules, async (req, res) => {
 
         const token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
         res.cookie("token", token, { httpOnly: true });
-        res.redirect("/");
+        res.redirect("/welcome");
     } catch (err) {
         console.error(err);
         res.status(500).render("error", { title: "Error", message: "Internal Server Error" });
@@ -107,7 +107,7 @@ router.post("/login", loginValidationRules, async (req, res) => {
         if (user && await bcrypt.compare(password, user.password)) {
             const token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
             res.cookie("token", token, { httpOnly: true });
-            res.redirect("/");
+            res.redirect("/welcome");
         } else {
             res.render('login', {
                 title: "Login",
@@ -172,7 +172,7 @@ router.post("/change-password", changePasswordValidationRules, extractUser, asyn
 
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
-        res.redirect('/');
+        res.redirect('/welcome');
     } catch (err) {
         console.error(err);
         res.status(500).render("error", { title: "Error", message: "Internal Server Error" });

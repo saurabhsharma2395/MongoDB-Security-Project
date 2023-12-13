@@ -21,13 +21,15 @@
 
     <div id="restaurantGrid">
         {{#each filter_restaurants}}
-            <div class="restaurant-card">
-                <h4>{{name}}</h4>
-                <p>{{cuisine}}</p>
-                <p>{{address.building}} {{address.street}}, {{address.zipcode}}</p>
-                <p>Borough: {{borough}}</p>
-                <p>Restaurant ID: {{restaurant_id}}</p>
-            </div>
+            <a href="/api/restaurant/individual/{{restaurant_id}}" class="restaurant-link">
+                <div class="restaurant-card">
+                    <h4>{{name}}</h4>
+                    <p>{{cuisine}}</p>
+                    <p>{{address.building}} {{address.street}}, {{address.zipcode}}</p>
+                    <p>Borough: {{borough}}</p>
+                    <p>Restaurant ID: {{restaurant_id}}</p>
+                </div>
+            </a>
         {{/each}}
     </div>
     <div id="loadMore" style="display: none;"></div>
@@ -51,7 +53,8 @@
                 success: function(data) {
                     if (data.filter_restaurants && data.filter_restaurants.length > 0) {
                         data.filter_restaurants.forEach(function(restaurant) {
-                            var card = '<div class="restaurant-card">' +
+                            var card = '<a href="/api/restaurant/individual/' + restaurant.restaurant_id + '" class="restaurant-link">' +
+                            '<div class="restaurant-card">' +
                                 '<h4>' + restaurant.name + '</h4>' +
                                 '<p>' + restaurant.cuisine + '</p>' +
                                 '<p>' + restaurant.address.building + ' ' + restaurant.address.street + ', ' + restaurant.address.zipcode + '</p>' +
