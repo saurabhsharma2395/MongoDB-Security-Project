@@ -1,7 +1,8 @@
 const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLList, GraphQLFloat, GraphQLInt, GraphQLNonNull, GraphQLID } = require('graphql');
-const graphqlHTTP = require('graphql-http');
-const Restaurant = require('../models/restaurant.js');
+const { createHandler } = require('graphql-http/lib/use/http');
+const Restaurant = require('../models/restaurant.js'); // Adjust the path to your model
 
+// Define the GraphQL Grade Type
 const GradeType = new GraphQLObjectType({
     name: 'Grade',
     fields: () => ({
@@ -11,22 +12,24 @@ const GradeType = new GraphQLObjectType({
     })
 });
 
+// Define the GraphQL Address Type
+const AddressType = new GraphQLObjectType({
+    name: 'Address',
+    fields: () => ({
+        building: { type: GraphQLString },
+        coord: { type: new GraphQLList(GraphQLFloat) },
+        street: { type: GraphQLString },
+        zipcode: { type: GraphQLString },
+        borough: { type: GraphQLString }
+    })
+});
+
+// Define the GraphQL Restaurant Type
 const RestaurantType = new GraphQLObjectType({
     name: 'Restaurant',
     fields: () => ({
         _id: { type: GraphQLID },
-        address: { 
-            type: new GraphQLObjectType({
-                name: 'Address',
-                fields: () => ({
-                    building: { type: GraphQLString },
-                    coord: { type: new GraphQLList(GraphQLFloat) },
-                    street: { type: GraphQLString },
-                    zipcode: { type: GraphQLString },
-                    borough: { type: GraphQLString }
-                })
-            })
-        },
+        address: { type: AddressType },
         cuisine: { type: GraphQLString },
         grades: { type: new GraphQLList(GradeType) },
         name: { type: GraphQLString },
@@ -34,6 +37,7 @@ const RestaurantType = new GraphQLObjectType({
     })
 });
 
+// Define the Root Query
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
@@ -44,10 +48,11 @@ const RootQuery = new GraphQLObjectType({
                 return Restaurant.findById(args._id);
             }
         }
-        //TODO
+        // Add other queries here if necessary
     }
 });
 
+// Define the Mutation
 const mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
@@ -55,13 +60,11 @@ const mutation = new GraphQLObjectType({
             type: RestaurantType,
             args: {
                 _id: { type: new GraphQLNonNull(GraphQLID) },
-                // Add other fields you want to be able to update
                 name: { type: GraphQLString },
                 cuisine: { type: GraphQLString },
-                // Add other fields as needed
+                // Add other fields for update as necessary
             },
             resolve(parent, args) {
-                // Implement logic to update a restaurant
                 return Restaurant.findByIdAndUpdate(args._id, args, { new: true });
             }
         },
@@ -71,19 +74,28 @@ const mutation = new GraphQLObjectType({
                 _id: { type: new GraphQLNonNull(GraphQLID) }
             },
             resolve(parent, args) {
-                // Implement logic to delete a restaurant
                 return Restaurant.findByIdAndRemove(args._id);
             }
         }
     }
 });
 
+// Create the GraphQL Schema
 const schema = new GraphQLSchema({
     query: RootQuery,
     mutation: mutation
 });
 
-module.exports = graphqlHTTP({
-    schema: schema,
-    graphiql: true, // Set to false in production
-});
+// Create the GraphQL over HTTP handler
+const graphqlHandler = createHandler({ schema });
+
+// Middleware for Express
+const graphqlMiddleware = (req, res, next) => {
+    if (req.originalUrl.startsWith('/graphql')) {
+        graphqlHandler(req, res);
+    } else {
+        next();
+    }
+};
+
+module.exports = graphqlMiddleware;
