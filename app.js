@@ -11,163 +11,79 @@
 
 var express = require("express");
 var path = require("path");
-const mongoose = require("mongoose");
+require("dotenv").config({ path: "./config/.env" });
+const cookieParser = require('cookie-parser');
 const exphbs = require("express-handlebars");
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
 // Import routes
 var restaurantRoutesCLI = require('./routes/restaurantsCLI');
 var restaurantRoutes = require('./routes/restaurants');
-const UserModel = require("./models/user");
+var loginRoutes = require('./routes/login');
+
+// db initialization
 const db = require('./config/db');
 
 var app = express();
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(cookieParser());
 
+// Handlebars setup
 const HBS = exphbs.create({
-  // Create custom helper
   helpers: {
-    isArray: function (value) {
-      return Array.isArray(value);
-    },
-    json: function(context){
-      return JSON.stringify(context);
-    }
+    isArray: value => Array.isArray(value),
+    json: context => JSON.stringify(context)
   },
   defaultLayout: "main",
-  extname: ".hbs",
-  runtimeOptions: {
-    allowProtoPropertiesByDefault: true,
-    allowProtoMethodsByDefault: true
-  }
+  extname: ".hbs"
 });
+
+app.engine(".hbs", HBS.engine);
+app.set("view engine", "hbs");
 
 // Initialize database
 db.initialize();
 
-// Initialize handlebars as template engine
-app.engine(".hbs", HBS.engine);
-app.set("view engine", "hbs");
-
-// Use restaurant routes
+// Use routes
 app.use("/api/restaurantCLI", restaurantRoutesCLI);
 app.use("/api/restaurant", restaurantRoutes);
-function isLoggedIn(req) {
-  try {
-      const token = req.cookies['token']; // Assuming the token is stored in a cookie named 'token'
-      if (!token) {
-          return false;
-      }
+app.use("/", loginRoutes);
 
+// Middleware function to test login state at all times
+function isLoggedIn(req, res, next) {
+  try {
+    const token = req.cookies['token']; // token is stored in a cookie named 'token'
+    if (!token) {
+      res.locals.isLoggedIn = false;
+    } else {
       // Verify the token
-      jwt.verify(token, process.env.JWT_SECRET);
-      return true;
-  } catch (err) {
-      return false;
-  }
-}
-// Route to render the registration page
-app.get("/register", (req, res) => {
-  res.render("register", { title: "Register" });
-});
-app.post("/register", async (req, res) => {
-  try {
-    // Get user input
-    const { first_name, last_name, email, password } = req.body;
-
-    // Validate user input
-    if (!(email && password && first_name && last_name)) {
-      return res.status(400).send("All input is required");
+      jwt.verify(token, process.env.TOKEN_KEY);
+      res.locals.isLoggedIn = true;
     }
-
-    // Check if user already exists
-    const oldUser = await UserModel.findOne({ email });
-    if (oldUser) {
-      return res.status(409).send("User Already Exist. Please Login");
-    }
-
-    // Encrypt user password
-    const encryptedPassword = await bcrypt.hash(password, 10);
-
-    // Create user in our database
-    const user = await UserModel.create({
-      _id: new mongoose.Types.ObjectId(),
-      first_name,
-      last_name,
-      email: email.toLowerCase(),
-      password: encryptedPassword,
-    });
-
-    // Create token
-    const token = jwt.sign(
-      {email },
-      process.env.TOKEN_KEY,
-      { expiresIn: "2h" }
-    );
-
-    // Save user token
-    user.token = token;
-
-    // Return new user
-    //res.status(201).json(user);
-    console.log("Registation Successfull");
-    res.redirect('/api/restaurant');
   } catch (err) {
     console.error(err);
-    res.status(500).send("Internal Server Error");
+    res.locals.isLoggedIn = false;
   }
-});
-// Route to render the login page
-app.get("/login", (req, res) => {
-  res.render("login", { title: "Login" });
-});
-app.post('/login', async (req, res) => {
-  try {
-      const { email, password } = req.body;
-      const user = await UserModel.findOne({ email: email.toLowerCase() });
+  next();
+}
 
-      if (user && await bcrypt.compare(password, user.password)) {
-          const token = jwt.sign(
-              { user_id: user._id, email },
-              process.env.TOKEN_KEY,
-              { expiresIn: "2h" }
-          );
+// Apply isLoggedIn middleware to every request
+app.use(isLoggedIn);
 
-          // Set token in cookie with HTTP Only flag
-          res.cookie('token', token, { httpOnly: true });
-          res.redirect('/api/restaurant'); // or to the page you want to redirect after login
-      } else {
-          res.status(401).send("Invalid Credentials");
-      }
-  } catch (err) {
-      console.error(err);
-      res.status(500).send("Internal Server Error");
-  }
-});
-
-
-
-// Define a route to render the index page
+// Define the index route
 app.get("/", (req, res) => {
-  // Check if user is logged in
-  res.render("index", { title: "Project - Restaurant", isLoggedIn: isLoggedIn });
+  res.render("index", { title: "Project - Restaurant" });
 });
-// Logout route
-app.get('/logout', (req, res) => {
-  res.clearCookie('token'); // Clear the JWT token cookie
-  res.redirect('/login'); // Redirect to the login page
-});
+
 // Handle 404 errors
-app.get("*", function (req, res) {
-  res.render("error", { title: "Error", message: "Wrong Route" });
+app.use("*", (req, res) => {
+  res.render("error", { title: "Error", message: "Page Not Found" });
 });
 
-// Set constant for port
 const PORT = process.env.PORT || 3000;
-
-// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });

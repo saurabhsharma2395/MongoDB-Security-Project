@@ -1,13 +1,3 @@
-<!--******************************************************************************
- *
- *  ITE5315 – Project 
- *  I declare that this assignment is my own work in accordance with Humber Academic Policy. 
- *  No part of this assignment has been copied manually or electronically from any other source 
- *  (including web sites) or distributed to other students.
- *
- *	Name: Saurabh Sharma & Taranjeet Singh 	Student ID: N01543808	Date: December 05, 2023
- *
-******************************************************************************-->
 <link rel="stylesheet" href="/stylesheets/style.css" />
 <h3>
     Developed by Saurabh Sharma & Taranjeet Singh
@@ -17,20 +7,33 @@
   <ul>
     <li><a href="/">Home</a></li>
     <li><a href="/api/restaurant">All Data</a></li>
-    <li><a href="/api/restaurant/insert">Insert</a></li>
-    <li><a href="/api/restaurant/delete">Delete</a></li>
-    <li><a href="/api/restaurant/updateRestaurant">Update</a></li>
-    <li class="dropdown">
-      <a href="#">Search</a>
-      <div class="dropdown-content">
-        <a href="/api/restaurant/find">Cuisine</a>
-        <a href="/api/restaurant/find">Borough</a>
-      </div>
-    </li>
-    <li id="logoutLi" style="display: none;"><a href="/logout">Logout</a></li>
-
+    {{#if isLoggedIn}}
+      <li class="dropdown">
+        <a href="#">Search</a>
+        <div class="dropdown-content">
+          <a href="/api/restaurant/find">Cuisine</a>
+          <a href="/api/restaurant/find">Borough</a>
+        </div>
+      </li>
+      <li><a href="/api/restaurant/insert">Insert</a></li>
+      <li id="logoutLi"><a href="/logout">Signout</a></li>
+    {{else}}
+      <li class="dropdown">
+        <a href="#">Search</a>
+        <div class="dropdown-content">
+          <a href="/api/restaurant/find">Cuisine</a>
+          <a href="/api/restaurant/find">Borough</a>
+        </div>
+      </li>
+      <li class="dropdown">
+        <a href="#">SignIn</a>
+        <div class="dropdown-content">
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+        </div>
+      </li>
+    {{/if}}
   </ul>
 </nav>
-    <canvas id="canvas_head"></canvas>
-    <script type="module" src="/JavaScript/design_header.js"></script>
-    <script src="/JavaScript/loginHandler.js"></script>
+<canvas id="canvas_head"></canvas>
+<script type="module" src="/JavaScript/design_header.js"></script>
