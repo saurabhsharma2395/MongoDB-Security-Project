@@ -16,7 +16,13 @@
         </div>
       </li>
       <li><a href="/api/restaurant/insert">Insert</a></li>
-      <li id="logoutLi"><a href="/logout">Signout</a></li>
+      <li class="dropdown">
+        <a href="#">SignOut</a>
+        <div class="dropdown-content">
+          <a href="/logout">Login</a>
+          <a href="/change-password">Change Password</a>
+        </div>
+      </li>
     {{else}}
       <li class="dropdown">
         <a href="#">Search</a>

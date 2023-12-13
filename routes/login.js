@@ -19,6 +19,18 @@ const loginValidationRules = [
     check("password").not().isEmpty().withMessage("Password is required.")
 ];
 
+// Validation rules for change password
+const changePasswordValidationRules = [
+    check('oldPassword').not().isEmpty().withMessage('Old password is required.'),
+    check('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters long.'),
+    check('confirmPassword').custom((value, { req }) => {
+        if (value !== req.body.newPassword) {
+            throw new Error('Confirm password does not match new password.');
+        }
+        return true;
+    })
+];
+
 // Route to render the registration page
 router.get("/register", (req, res) => {
     res.render("register", { title: "Register" });
@@ -103,6 +115,49 @@ router.post("/login", loginValidationRules, async (req, res) => {
                 formData: req.body
             });
         }
+    } catch (err) {
+        console.error(err);
+        res.status(500).render("error", { title: "Error", message: "Internal Server Error" });
+    }
+});
+
+// Route to render the change password page
+router.get("/change-password", (req, res) => {
+    res.render("changepassword", { title: "Change Password" });
+});
+
+// Route to handle change password
+router.post("/change-password", changePasswordValidationRules, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const formattedErrors = {};
+        errors.array().forEach(error => {
+            formattedErrors[error.param] = error.msg;
+        });
+
+        return res.render('changepassword', {
+            title: "Change Password",
+            errors: formattedErrors,
+            formData: req.body
+        });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    try {
+        // Replace with your user authentication logic
+        // Assuming `req.user` contains the authenticated user's info
+        const user = await UserModel.findById(req.user._id);
+        if (!user || !await bcrypt.compare(oldPassword, user.password)) {
+            return res.render('changepassword', {
+                title: "Change Password",
+                errors: { oldPassword: { msg: "Old password is incorrect." } }
+            });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+        res.redirect('/'); // or any other page
     } catch (err) {
         console.error(err);
         res.status(500).render("error", { title: "Error", message: "Internal Server Error" });
