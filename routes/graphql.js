@@ -1,8 +1,7 @@
-const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLList, GraphQLFloat, GraphQLInt, GraphQLNonNull, GraphQLID } = require('graphql');
+const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLList, GraphQLFloat, GraphQLInt, GraphQLNonNull, GraphQLID, GraphQLInputObjectType } = require('graphql');
 const { createHandler } = require('graphql-http/lib/use/http');
-const Restaurant = require('../models/restaurant.js'); // Adjust the path to your model
+const Restaurant = require('../models/restaurant.js'); 
 
-// Define the GraphQL Grade Type
 const GradeType = new GraphQLObjectType({
     name: 'Grade',
     fields: () => ({
@@ -12,7 +11,6 @@ const GradeType = new GraphQLObjectType({
     })
 });
 
-// Define the GraphQL Address Type
 const AddressType = new GraphQLObjectType({
     name: 'Address',
     fields: () => ({
@@ -24,7 +22,6 @@ const AddressType = new GraphQLObjectType({
     })
 });
 
-// Define the GraphQL Restaurant Type
 const RestaurantType = new GraphQLObjectType({
     name: 'Restaurant',
     fields: () => ({
@@ -37,7 +34,26 @@ const RestaurantType = new GraphQLObjectType({
     })
 });
 
-// Define the Root Query
+const AddressInputType = new GraphQLInputObjectType({
+    name: 'AddressInput',
+    fields: {
+        building: { type: GraphQLString },
+        coord: { type: new GraphQLList(GraphQLFloat) },
+        street: { type: GraphQLString },
+        zipcode: { type: GraphQLString },
+        borough: { type: GraphQLString }
+    }
+});
+
+const GradeInputType = new GraphQLInputObjectType({
+    name: 'GradeInput',
+    fields: {
+        date: { type: GraphQLString },
+        grade: { type: GraphQLString },
+        score: { type: GraphQLInt }
+    }
+});
+
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
@@ -48,11 +64,9 @@ const RootQuery = new GraphQLObjectType({
                 return Restaurant.findById(args._id);
             }
         }
-        // Add other queries here if necessary
     }
 });
 
-// Define the Mutation
 const mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
@@ -62,10 +76,28 @@ const mutation = new GraphQLObjectType({
                 _id: { type: new GraphQLNonNull(GraphQLID) },
                 name: { type: GraphQLString },
                 cuisine: { type: GraphQLString },
-                // Add other fields for update as necessary
+                address: { type: AddressInputType },
+                grades: { type: new GraphQLList(GradeInputType) },
+                restaurant_id: { type: GraphQLString }
+                // Add other fields if necessary
             },
-            resolve(parent, args) {
-                return Restaurant.findByIdAndUpdate(args._id, args, { new: true });
+            async resolve(parent, args) {
+                try {
+                    const restaurant = await Restaurant.findById(args._id);
+                    if (!restaurant) {
+                        throw new Error('Restaurant not found');
+                    }
+
+                    Object.keys(args).forEach(key => {
+                        if (args[key] !== undefined && key !== '_id') {
+                            restaurant[key] = args[key];
+                        }
+                    });
+
+                    return restaurant.save();
+                } catch (error) {
+                    throw new Error(error.message);
+                }
             }
         },
         deleteRestaurant: {
@@ -73,8 +105,16 @@ const mutation = new GraphQLObjectType({
             args: {
                 _id: { type: new GraphQLNonNull(GraphQLID) }
             },
-            resolve(parent, args) {
-                return Restaurant.findByIdAndRemove(args._id);
+            async resolve(parent, args) {
+                try {
+                    const deletedRestaurant = await Restaurant.findByIdAndRemove(args._id);
+                    if (!deletedRestaurant) {
+                        throw new Error('Restaurant not found');
+                    }
+                    return deletedRestaurant;
+                } catch (error) {
+                    throw new Error(error.message);
+                }
             }
         }
     }
