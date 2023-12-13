@@ -90,38 +90,79 @@
         </div>
     </div>
 
-    <!-- Dynamic Grades Section -->
-    <div id="grades-section">
-        <label>Grades:</label>
-        <div id="grade-fields"></div>
-        <button class="btn btn-primary" type="button" id="add-grade">Add Grade</button>
-    </div>
+<!-- Dynamic Grades Section -->
+<div id="grades-section">
+    <label>Grades:</label>
+    <div id="grade-fields">
+        {{#each formData.grades as |grade index|}}
+            {{!-- Pre-calculate error keys --}}
+            {{setVar "dateErrorKey" (concat 'grades[' index '].date')}}
+            {{setVar "gradeErrorKey" (concat 'grades[' index '].grade')}}
+            {{setVar "scoreErrorKey" (concat 'grades[' index '].score')}}
 
-    <input class="btn btn-primary" type="submit" value="Submit" />
+            <div class="grade-group">
+                <div class="row-group">
+                    <!-- Grade Date Field -->
+                    <div class="inline-group">
+                        <label>Grade Date:</label>
+                        <input class="form-control inline-control" name="grades[{{index}}][date]" type="date" value="{{grade.date}}">
+                        {{#if errors.[dateErrorKey]}}
+                            <p class="error">Error: {{errors.[dateErrorKey]}}</p>
+                        {{/if}}
+                    </div>
+                    <!-- Grade Field -->
+                    <div class="inline-group">
+                        <label>Grade:</label>
+                        <input class="form-control inline-control" name="grades[{{index}}][grade]" type="text" value="{{grade.grade}}">
+                        {{#if errors.[gradeErrorKey]}}
+                            <p class="error">Error: {{errors.[gradeErrorKey]}}</p>
+                        {{/if}}
+                    </div>
+                    <!-- Score Field -->
+                    <div class="inline-group">
+                        <label>Score:</label>
+                        <input class="form-control inline-control" name="grades[{{index}}][score]" type="number" value="{{grade.score}}">
+                        {{#if errors.[scoreErrorKey]}}
+                            <p class="error">Error: {{errors.[scoreErrorKey]}}</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+    <button class="btn btn-primary" type="button" id="add-grade">Add Grade</button>
+</div>
+
+<input class="btn btn-primary" type="submit" value="Submit" />
 </div>
 </form>
+
 <script>
     document.getElementById('add-grade').addEventListener('click', function(event) {
         event.preventDefault();
+        addGradeField();
+    });
+
+    function addGradeField(existingData) {
         const gradeIndex = document.querySelectorAll('.grade-group').length;
         const gradeGroup = document.createElement('div');
         gradeGroup.classList.add('grade-group');
         gradeGroup.innerHTML = `
-        <div class="row-group">
-            <div class="inline-group">
-                <label>Grade Date:</label>
-                <input class="form-control inline-control" name="grades[${gradeIndex}][date]" type="date">
+            <div class="row-group">
+                <div class="inline-group">
+                    <label>Grade Date:</label>
+                    <input class="form-control inline-control" name="grades[${gradeIndex}][date]" type="date" value="${existingData ? existingData.date : ''}">
+                </div>
+                <div class="inline-group">
+                    <label>Grade:</label>
+                    <input class="form-control inline-control" name="grades[${gradeIndex}][grade]" type="text" value="${existingData ? existingData.grade : ''}">
+                </div>
+                <div class="inline-group">
+                    <label>Score:</label>
+                    <input class="form-control inline-control" name="grades[${gradeIndex}][score]" type="number" value="${existingData ? existingData.score : ''}">
+                </div>
             </div>
-            <div class="inline-group">
-                <label>Grade:</label>
-                <input class="form-control inline-control" name="grades[${gradeIndex}][grade]" type="text">
-            </div>
-            <div class="inline-group">
-                <label>Score:</label>
-                <input class="form-control inline-control" name="grades[${gradeIndex}][score]" type="number">
-            </div>
-        </div>
-    `;
+        `;
         document.getElementById('grade-fields').appendChild(gradeGroup);
-    });
+    }
 </script>

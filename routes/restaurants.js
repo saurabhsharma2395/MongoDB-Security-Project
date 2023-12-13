@@ -15,10 +15,31 @@
  const bodyParser = require('body-parser');
  const restaurants = require('../models/restaurant.js');
  const { check, validationResult } = require("express-validator");
- const { requireAuth, checkRole } = require('../middleware/auth');
+ const jwt = require('jsonwebtoken');
+
  // Middleware to handle JSON requests
  router.use(bodyParser.json());
+
+ function isLoggedIn(req, res, next) {
+    try {
+      const token = req.cookies['token'];
+      if (!token) {
+        res.locals.isLoggedIn = false;
+        return res.redirect('/login'); // Redirect to login if not logged in
+      } else {
+        jwt.verify(token, process.env.TOKEN_KEY);
+        res.locals.isLoggedIn = true;
+      }
+    } catch (err) {
+      console.error(err);
+      res.locals.isLoggedIn = false;
+      return res.redirect('/login'); // Redirect to login on token verification error
+    }
+    next();
+  }
  
+ // Apply isLoggedIn middleware to all restaurant routes
+router.use(isLoggedIn);
  
  // Get all restaurants
  const loadRestaurantsData = async (req, res, next) => {
@@ -86,6 +107,10 @@ const restaurantValidationRules = [
     check("zipcode").not().isEmpty().withMessage("Zipcode is required."),
     check("cuisine").not().isEmpty().withMessage("Cuisine is required."),
     check("borough").not().isEmpty().withMessage("Borough is required."),
+     // Validation for grade fields
+     check('grades.*.date').optional({ checkFalsy: true }).isISO8601().withMessage('Grade date must be a valid date.'),
+     check('grades.*.grade').optional({ checkFalsy: true }).notEmpty().withMessage('Grade is required.'),
+     check('grades.*.score').optional({ checkFalsy: true }).isInt({ min: 0 }).withMessage('Score must be a non-negative integer.'),
   ];
 
 router.post('/insert', restaurantValidationRules, async (req, res) => {
@@ -93,8 +118,10 @@ router.post('/insert', restaurantValidationRules, async (req, res) => {
   if (!errors_list.isEmpty()) {
     const formattedErrors = {};
     errors_list.array().forEach((error) => {
-      formattedErrors[error.path] = error.msg;
+      const formattedPath = error.path.replace(/'\[/g, "[").replace(/\]'/g, "]");
+      formattedErrors[formattedPath] = error.msg;
     });
+    console.log(formattedErrors);
 
     return res.status(400).render('insert_restaurant', {
       errors: formattedErrors,
@@ -146,16 +173,19 @@ router.post('/insert', restaurantValidationRules, async (req, res) => {
 });
 
 // Render form to update restaurant data
-router.get('/find', async (req, res) => {
-    res.render('search');
+router.get('/find/:parameter', async (req, res) => {
+    const searchType = req.params.parameter;
+    res.render('search', { parameter: searchType });
 });
 
 router.get('/search', async (req, res) => {
     try {
+        const searchType = req.query.parameter; // Retrieve the search type
         const searchQuery = req.query.var_InputText || '';
-        console.log("Search Query:", searchQuery); // Confirming the search query
 
-        // Check if the search query is empty
+        console.log("Search Type:", searchType);
+        console.log("Search Query:", searchQuery);
+
         if (!searchQuery.trim()) {
             console.log("Empty search query received");
             return res.status(400).render('searchResults', { 
@@ -164,17 +194,12 @@ router.get('/search', async (req, res) => {
             });
         }
 
-        // Perform a case-insensitive search in the 'cuisine' field
-        const regex = new RegExp(searchQuery, 'i');
-        console.log("Regex used for search:", regex);
+        // Dynamically set the search field
+        const query = { [searchType]: new RegExp(searchQuery, 'i') };
+        console.log("Query used for search:", query);
 
-        const filter_restaurants = await restaurants.find({
-            cuisine: regex
-        }).lean();
-
+        const filter_restaurants = await restaurants.find(query).lean();
         console.log("Number of restaurants found:", filter_restaurants.length);
-        
- 
 
         res.render('searchResults', { filter_restaurants });
     } catch (err) {

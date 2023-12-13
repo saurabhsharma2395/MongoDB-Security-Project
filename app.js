@@ -35,7 +35,15 @@ app.use(cookieParser());
 const HBS = exphbs.create({
   helpers: {
     isArray: value => Array.isArray(value),
-    json: context => JSON.stringify(context)
+    json: context => JSON.stringify(context),
+    concat: function() {
+      const args = Array.from(arguments);
+      args.pop(); // Remove the Handlebars options object
+      return args.join('');
+    },
+    setVar: function(name, value, options) {
+      options.data.root[name] = value;
+  }
   },
   defaultLayout: "main",
   extname: ".hbs"
@@ -58,12 +66,14 @@ function isLoggedIn(req, res, next) {
     const token = req.cookies['token']; // token is stored in a cookie named 'token'
     if (!token) {
       res.locals.isLoggedIn = false;
+      return res.redirect('/login');
     } else {
       // Verify the token
       jwt.verify(token, process.env.TOKEN_KEY);
       res.locals.isLoggedIn = true;
     }
   } catch (err) {
+    console.log(5);
     console.error(err);
     res.locals.isLoggedIn = false;
   }
