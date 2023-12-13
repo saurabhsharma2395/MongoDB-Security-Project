@@ -263,10 +263,22 @@ router.get('/individual/:restaurant_id', async (req, res) => {
               message: "Restaurant not found."
           });
       }
-
+      
+      const offset = 0.001; // This value can be adjusted based on how zoomed in you want the map to be
+      const latitude = filter_restaurants[0].address.coord[1];
+      const longitude = filter_restaurants[0].address.coord[0];
+  
+      const boundingBox = {
+          longitudeMinusOffset: longitude - offset,
+          latitudeMinusOffset: latitude - offset,
+          longitudePlusOffset: longitude + offset,
+          latitudePlusOffset: latitude + offset
+      };
+  
       res.render('restaurantDetail', {
           title: 'Restaurant Details',
-          restaurant_dat: filter_restaurants[0]
+          restaurant_dat: filter_restaurants[0],
+          ...boundingBox
       });
   } catch (err) {
       console.error("Error fetching restaurant details: ", err);

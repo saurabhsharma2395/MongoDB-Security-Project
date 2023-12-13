@@ -6,14 +6,100 @@
     <link rel="stylesheet" href="/stylesheets/style.css" />
 </head>
 <body>
-    <h1>{{restaurant_dat.name}}</h1>
-    <p>{{restaurant_dat.cuisine}}</p>
-    <p>{{restaurant_dat.address.building}} {{restaurant_dat.address.street}}, {{restaurant_dat.address.zipcode}}</p>
-    <p>Borough: {{restaurant_dat.borough}}</p>
+    <div class="restaurant-detail-container">
+        <div class="restaurant-info">
+            <h1>{{restaurant_dat.name}}</h1>
+            <p>{{restaurant_dat.cuisine}}</p>
+            <p>{{restaurant_dat.address.building}} {{restaurant_dat.address.street}}, {{restaurant_dat.address.zipcode}}</p>
+            <p>Borough: {{restaurant_dat.borough}}</p>
 
-    <!-- Add edit, delete, and book table buttons -->
-    <a href="/edit-restaurant/{{restaurant_dat._id}}">Edit</a>
-    <a href="/delete-restaurant/{{restaurant_dat._id}}">Delete</a>
-    <a href="/book-table/{{restaurant_dat._id}}">Book a Table</a>
+            <!-- Edit and Delete buttons -->
+            <button id="editButton" onclick="toggleEditForm()" class="btn-primary">Edit</button>
+            <button onclick="deleteRestaurant('{{restaurant_dat._id}}')" class="btn-primary">Delete</button>
+            <button onclick="navigateTo('/book-restaurant/{{restaurant_dat._id}}')" class="btn-primary">Book a Table</button>
+        </div>
+
+        <!-- Edit Form -->
+        <div id="editForm" class="edit-form" style="display: none;">
+            <textarea id="editData" rows="5" style="width: 100%;">{{json restaurant_dat}}</textarea>
+            <button onclick="submitEdit('{{restaurant_dat._id}}')" class="btn-primary">Done</button>
+        </div>
+
+        <!-- Maps Image -->
+        <div class="restaurant-map">
+            <iframe width="300" height="300" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+                src="https://www.openstreetmap.org/export/embed.html?bbox={{longitudeMinusOffset}},{{latitudeMinusOffset}},{{longitudePlusOffset}},{{latitudePlusOffset}}&amp;layer=mapnik&amp;marker={{restaurant_dat.address.coord.[0]}},{{restaurant_dat.address.coord.[1]}}"
+                class="map-frame">
+            </iframe>
+            <br/>
+            <small>
+                <a href="https://www.openstreetmap.org/?mlat={{restaurant_dat.address.coord.[0]}}&amp;mlon={{restaurant_dat.address.coord.[1]}}#map=15/{{restaurant_dat.address.coord.[0]}}/{{restaurant_dat.address.coord.[1]}}">View Larger Map</a>
+            </small>
+        </div>
+    </div>
+
+    <script>
+        function toggleEditForm() {
+            var form = document.getElementById('editForm');
+            var editButton = document.getElementById('editButton');
+            var isFormVisible = form.style.display === 'block';
+
+            form.style.display = isFormVisible ? 'none' : 'block';
+            editButton.innerText = isFormVisible ? 'Edit' : 'Cancel';
+        }
+
+        function submitEdit(id) {
+            var data = JSON.parse(document.getElementById('editData').value);
+            // Perform GraphQL mutation to update restaurant
+            fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: `mutation {
+                        updateRestaurant(_id: "${id}", name: "${data.name}", cuisine: "${data.cuisine}") {
+                            name
+                            cuisine
+                            // Add other fields as needed
+                        }
+                    }`
+                })
+            }).then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                toggleEditForm(); // Hide form and change button text to 'Edit'
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function deleteRestaurant(id) {
+            // Perform GraphQL mutation to delete restaurant
+            fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: `mutation {
+                        deleteRestaurant(_id: "${id}") {
+                            _id
+                        }
+                    }`
+                })
+            }).then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                window.location.href = '/'; // Redirect after delete
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+    </script>
 </body>
 </html>

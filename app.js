@@ -15,6 +15,7 @@ require("dotenv").config({ path: "./config/.env" });
 const cookieParser = require('cookie-parser');
 const exphbs = require("express-handlebars");
 const jwt = require('jsonwebtoken');
+const graphqlHTTP = require('./routes/graphql');
 
 // Import routes
 var restaurantRoutesCLI = require('./routes/restaurantsCLI');
@@ -59,6 +60,8 @@ db.initialize();
 app.use("/api/restaurantCLI", restaurantRoutesCLI);
 app.use("/api/restaurant", restaurantRoutes);
 app.use("/", loginRoutes);
+
+app.use('/graphql', isLoggedIn, graphqlHTTP);
 
 // Middleware function to test login state at all times
 function isLoggedIn(req, res, next) {

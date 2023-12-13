@@ -17,8 +17,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
-    <h1>Search Results</h1>
-
+    <main>
+    <div id="headmessage">
+    <h2>Search Results</h2>
+    </div>
     <div id="restaurantGrid">
         {{#each filter_restaurants}}
             <a href="/api/restaurant/individual/{{restaurant_id}}" class="restaurant-link">
@@ -31,8 +33,9 @@
                 </div>
             </a>
         {{/each}}
-    </div>
     <div id="loadMore" style="display: none;"></div>
+    </div>
+    </main>
     <script>
         var page = {{currentPage}};
         var totalPages = {{totalPages}};

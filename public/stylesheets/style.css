@@ -296,3 +296,66 @@ tr:hover:not(.blank-row) {
 .restaurant-card {
   cursor: pointer;
 }
+
+/* Container for the entire restaurant detail section */
+.restaurant-detail-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Styles for restaurant information */
+.restaurant-info {
+  flex: 1; /* Take up available space */
+  margin-right: 20px; /* Space between info and map */
+}
+
+.restaurant-info h1 {
+  color: #333;
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.restaurant-info p {
+  font-size: 1.2em;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+/* Styles for buttons */
+.restaurant-info button {
+  background-color: #ff5733;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.restaurant-info button:hover {
+  background-color: #e64522;
+}
+
+/* Styles for the map section */
+.restaurant-map {
+  flex-basis: 300px; 
+}
+
+/* Styles for the map iframe */
+.map-frame {
+  width: 100%; 
+  height: 300px;
+  border: 1px solid #ddd; 
+  border-radius: 5px; 
+}
+
+.map-frame + small {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+}
