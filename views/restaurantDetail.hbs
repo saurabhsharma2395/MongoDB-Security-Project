@@ -48,53 +48,97 @@
             editButton.innerText = isFormVisible ? 'Edit' : 'Cancel';
         }
 
-        function submitEdit(id) {
-            var data = JSON.parse(document.getElementById('editData').value);
-            // Perform GraphQL mutation to update restaurant
-            fetch('/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    query: `mutation {
-                        updateRestaurant(_id: "${id}", name: "${data.name}", cuisine: "${data.cuisine}") {
-                            name
-                            cuisine
-                            // Add other fields as needed
-                        }
-                    }`
-                })
-            }).then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                toggleEditForm(); // Hide form and change button text to 'Edit'
-            })
-            .catch(error => console.error('Error:', error));
+    async function submitEdit(id) {
+    try {
+        var data = JSON.parse(document.getElementById('editData').value);
+        console.log('Submitting:', data);
+
+        const query = `
+            mutation UpdateRestaurant($id: ID!, $input: RestaurantInput!) {
+                updateRestaurant(_id: $id, input: $input) {
+                    name
+                    cuisine
+                    address {
+                        building
+                        street
+                        zipcode
+                        borough
+                        coord
+                    }
+                    grades {
+                        date
+                        grade
+                        score
+                    }
+                    restaurant_id
+                }
+            }`;
+
+        const variables = {
+            id: id,
+            input: {
+                name: data.name,
+                cuisine: data.cuisine,
+                address: data.address,
+                grades: data.grades,
+                restaurant_id: data.restaurant_id
+            }
+        };
+
+        const response = await fetch('/graphql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ query, variables })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        function deleteRestaurant(id) {
-            // Perform GraphQL mutation to delete restaurant
-            fetch('/graphql', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                    query: `mutation {
-                        deleteRestaurant(_id: "${id}") {
-                            _id
-                        }
-                    }`
-                })
-            }).then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                window.location.href = '/'; // Redirect after delete
-            })
-            .catch(error => console.error('Error:', error));
+        const result = await response.json();
+        console.log('Mutation result:', result);
+
+        if (result.errors) {
+            throw new Error('Error in GraphQL response: ' + JSON.stringify(result.errors));
+        }
+
+        toggleEditForm(); // Hide the edit form
+    } catch (error) {
+        console.error('Error in submitEdit:', error);
+    }
+}
+
+        async function deleteRestaurant(id) {
+            try {
+                const response = await fetch('/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: `mutation {
+                            deleteRestaurant(_id: "${id}") {
+                                _id
+                            }
+                        }`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server response was not ok');
+                }
+
+                const result = await response.json();
+                console.log('Server response:', result); // Log server response
+
+                window.location.href = '/'; // Redirect to home after delete
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
         function navigateTo(url) {

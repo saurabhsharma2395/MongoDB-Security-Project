@@ -83,6 +83,7 @@ const mutation = new GraphQLObjectType({
             },
             async resolve(parent, args) {
                 try {
+                    console.log('Update request received:', args);
                     const restaurant = await Restaurant.findById(args._id);
                     if (!restaurant) {
                         throw new Error('Restaurant not found');
@@ -96,6 +97,7 @@ const mutation = new GraphQLObjectType({
 
                     return restaurant.save();
                 } catch (error) {
+                    console.error('Error in updateRestaurant:', error);
                     throw new Error(error.message);
                 }
             }

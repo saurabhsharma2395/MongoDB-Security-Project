@@ -76,7 +76,6 @@ function isLoggedIn(req, res, next) {
       res.locals.isLoggedIn = true;
     }
   } catch (err) {
-    console.log(5);
     console.error(err);
     res.locals.isLoggedIn = false;
   }
