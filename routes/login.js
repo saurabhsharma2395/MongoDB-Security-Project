@@ -72,7 +72,7 @@ router.post("/register", registerValidationRules, async (req, res) => {
             password: encryptedPassword
         });
 
-        const token = jwt.sign({ user_id: user._id, email }, process.env.JWT_SECRET, { expiresIn: "2h" });
+        const token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
         res.cookie("token", token, { httpOnly: true });
         res.redirect("/");
     } catch (err) {
@@ -105,13 +105,13 @@ router.post("/login", loginValidationRules, async (req, res) => {
     try {
         const user = await UserModel.findOne({ email: email.toLowerCase() });
         if (user && await bcrypt.compare(password, user.password)) {
-            const token = jwt.sign({ user_id: user._id, email }, process.env.JWT_SECRET, { expiresIn: "2h" });
+            const token = jwt.sign({ user_id: user._id, email }, process.env.TOKEN_KEY, { expiresIn: "2h" });
             res.cookie("token", token, { httpOnly: true });
             res.redirect("/");
         } else {
             res.render('login', {
                 title: "Login",
-                errors: { password: { msg: "Invalid Credentials" } },
+                errors: { password: "Invalid Credentials" },
                 formData: req.body
             });
         }
@@ -121,13 +121,30 @@ router.post("/login", loginValidationRules, async (req, res) => {
     }
 });
 
+// Middleware to extract user from JWT
+function extractUser(req, res, next) {
+    try {
+        const token = req.cookies['token'];
+        if (!token) {
+            return next(); // No token, skip
+        }
+
+        const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+        req.user = { _id: decoded.user_id };
+        next();
+    } catch (error) {
+        console.error(error);
+        next();
+    }
+}
+
 // Route to render the change password page
 router.get("/change-password", (req, res) => {
     res.render("changepassword", { title: "Change Password" });
 });
 
 // Route to handle change password
-router.post("/change-password", changePasswordValidationRules, async (req, res) => {
+router.post("/change-password", changePasswordValidationRules, extractUser, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const formattedErrors = {};
@@ -145,8 +162,6 @@ router.post("/change-password", changePasswordValidationRules, async (req, res) 
     const { oldPassword, newPassword } = req.body;
 
     try {
-        // Replace with your user authentication logic
-        // Assuming `req.user` contains the authenticated user's info
         const user = await UserModel.findById(req.user._id);
         if (!user || !await bcrypt.compare(oldPassword, user.password)) {
             return res.render('changepassword', {
@@ -157,7 +172,7 @@ router.post("/change-password", changePasswordValidationRules, async (req, res) 
 
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
-        res.redirect('/'); // or any other page
+        res.redirect('/');
     } catch (err) {
         console.error(err);
         res.status(500).render("error", { title: "Error", message: "Internal Server Error" });
