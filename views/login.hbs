@@ -31,3 +31,10 @@
 
     <input class="btn btn-primary" type="submit" value="Login" />
 </form>
+<label>Not a user? Sign up</label>
+<button onclick="navigateTo('/register')" class="btn-primary">Sign-up</button>
+<script>
+    function navigateTo(url) {
+        window.location.href = url;
+    }
+</script>

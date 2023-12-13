@@ -81,7 +81,7 @@ function isLoggedIn(req, res, next) {
 }
 
 // Apply isLoggedIn middleware to every request
-app.use(isLoggedIn);
+//app.use(isLoggedIn);
 
 // Define the index route
 app.get("/", (req, res) => {
